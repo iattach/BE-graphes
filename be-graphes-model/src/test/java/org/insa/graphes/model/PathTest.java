@@ -124,7 +124,6 @@ public class PathTest {
     @Test
     public void testGetLength() {
         assertEquals(0, emptyPath.getLength(), 1e-6);
-        System.out.println(emptyPath.getLength());
         assertEquals(0, singleNodePath.getLength(), 1e-6);
         assertEquals(40, shortPath.getLength(), 1e-6);
         assertEquals(62.8, longPath.getLength(), 1e-6);
@@ -155,6 +154,8 @@ public class PathTest {
     public void testGetMinimumTravelTime() {
         assertEquals(0, emptyPath.getMinimumTravelTime(), 1e-4);
         assertEquals(0, singleNodePath.getLength(), 1e-4);
+		System.out.println(shortPath.getGraph());
+		System.out.println(shortPath.getGraph().getGraphInformation());
         assertEquals(4, shortPath.getMinimumTravelTime(), 1e-4);
         assertEquals(5.14, longPath.getMinimumTravelTime(), 1e-4);
         assertEquals(5.5, loopPath.getMinimumTravelTime(), 1e-4);

@@ -124,6 +124,7 @@ public class PathTest {
     @Test
     public void testGetLength() {
         assertEquals(0, emptyPath.getLength(), 1e-6);
+        System.out.println(emptyPath.getLength());
         assertEquals(0, singleNodePath.getLength(), 1e-6);
         assertEquals(40, shortPath.getLength(), 1e-6);
         assertEquals(62.8, longPath.getLength(), 1e-6);

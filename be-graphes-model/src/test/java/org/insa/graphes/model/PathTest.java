@@ -90,7 +90,6 @@ public class PathTest {
     @Test
     public void testIsEmpty() {
         assertTrue(emptyPath.isEmpty());
-
         assertFalse(singleNodePath.isEmpty());
         assertFalse(shortPath.isEmpty());
         assertFalse(longPath.isEmpty());
@@ -154,8 +153,6 @@ public class PathTest {
     public void testGetMinimumTravelTime() {
         assertEquals(0, emptyPath.getMinimumTravelTime(), 1e-4);
         assertEquals(0, singleNodePath.getLength(), 1e-4);
-		System.out.println(shortPath.getGraph());
-		System.out.println(shortPath.getGraph().getGraphInformation());
         assertEquals(4, shortPath.getMinimumTravelTime(), 1e-4);
         assertEquals(5.14, longPath.getMinimumTravelTime(), 1e-4);
         assertEquals(5.5, loopPath.getMinimumTravelTime(), 1e-4);
@@ -215,6 +212,7 @@ public class PathTest {
         path = Path.createShortestPathFromNodes(graph,
                 Arrays.asList(new Node[] { nodes[0], nodes[1], nodes[2], nodes[3] }));
         expected = new Arc[] { a2b, b2c, c2d_2 };
+        System.out.println( path.getArcs());
         assertEquals(expected.length, path.getArcs().size());
         for (int i = 0; i < expected.length; ++i) {
             assertEquals(expected[i], path.getArcs().get(i));

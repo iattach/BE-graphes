@@ -30,12 +30,36 @@ public class Path {
      * @throws IllegalArgumentException If the list of nodes is not valid, i.e. two
      *         consecutive nodes in the list are not connected in the graph.
      * 
-     * @deprecated Need to be implemented.
      */
     public static Path createFastestPathFromNodes(Graph graph, List<Node> nodes)
             throws IllegalArgumentException {
         List<Arc> arcs = new ArrayList<Arc>();
-        // TODO:
+        System.out.println(nodes.size());
+        for(int i=0;i<(nodes.size()-1);i++) {
+			Arc arcshort=null;
+    		for(Arc arc:graph.get(nodes.get(i).getId()).getSuccessors()){
+    			
+    			if(arc.getDestination().compareTo(graph.get(nodes.get(i+1).getId()))==0) {
+    				if(arcshort==null) {
+    					arcshort=arc;
+        			}else {
+        				if(arcshort.getMinimumTravelTime()>arc.	getMinimumTravelTime()) {
+        					arcshort=arc;
+        				}
+        			}
+    				
+    			}
+    		}
+    		if(arcshort==null) {
+    			throw new IllegalArgumentException();
+    		}
+    		arcs.add(arcshort);
+    		
+    		
+    	}
+        if(nodes.size()==1) {
+        	return new Path(graph, graph.get(nodes.get(0).getId()));
+        }
         return new Path(graph, arcs);
     }
 
@@ -51,12 +75,36 @@ public class Path {
      * @throws IllegalArgumentException If the list of nodes is not valid, i.e. two
      *         consecutive nodes in the list are not connected in the graph.
      * 
-     * @deprecated Need to be implemented.
      */
     public static Path createShortestPathFromNodes(Graph graph, List<Node> nodes)
             throws IllegalArgumentException {
         List<Arc> arcs = new ArrayList<Arc>();
-        // TODO:
+        System.out.println(nodes.size());
+        for(int i=0;i<(nodes.size()-1);i++) {
+			Arc arcshort=null;
+    		for(Arc arc:graph.get(nodes.get(i).getId()).getSuccessors()){
+    			
+    			if(arc.getDestination().compareTo(graph.get(nodes.get(i+1).getId()))==0) {
+    				if(arcshort==null) {
+    					arcshort=arc;
+        			}else {
+        				if(arcshort.getLength()>arc.getLength()) {
+        					arcshort=arc;
+        				}
+        			}
+    				
+    			}
+    		}
+    		if(arcshort==null) {
+    			throw new IllegalArgumentException();
+    		}
+    		arcs.add(arcshort);
+    		
+    		
+    	}
+        if(nodes.size()==1) {
+        	return new Path(graph, graph.get(nodes.get(0).getId()));
+        }
         return new Path(graph, arcs);
     }
 

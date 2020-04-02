@@ -5,11 +5,11 @@ import java.util.Arrays;
 import java.util.Collections;
 
 import org.insa.graphs.algorithm.AbstractSolution.Status;
+import org.insa.graphs.algorithm.utils.*;
 import org.insa.graphs.model.Arc;
 import org.insa.graphs.model.Graph;
 import org.insa.graphs.model.Node;
 import org.insa.graphs.model.Path;
-import org.insa.graphs.model.Label;
 
 public class DijkstraAlgorithm extends ShortestPathAlgorithm {
 
@@ -27,57 +27,61 @@ public class DijkstraAlgorithm extends ShortestPathAlgorithm {
         final int nbNodes = graph.size();
         
         // Initialize array of marks.
-        boolean[] marks=new boolean[nbNodes];   
-        Arrays.fill(marks,false );
-        
-        // Initialize array of distances.
-        double[] distances = new double[nbNodes];
-        Arrays.fill(distances, Double.POSITIVE_INFINITY);
-        distances[data.getOrigin().getId()] = 0;
+        Label[] marks=new Label[nbNodes];   
+        for (Node node: graph.getNodes()) {
+        	marks[node.getId()]=new Label(node,false,Double.POSITIVE_INFINITY,null);
+        }
+        marks[data.getOrigin().getId()].setCost(0);
+        //Initialize the heap
+        BinaryHeap<Label> bh=new BinaryHeap<Label>();
+        bh.insert(marks[data.getOrigin().getId()]);
         
         // Notify observers about the first event (origin processed).
         notifyOriginProcessed(data.getOrigin());
         
-        // Initialize array of predecessors.
-        Arc[] predecessorArcs = new Arc[nbNodes];
         
-        // cycle...
-        boolean found = false;
-        for (int i = 0; !found && i < nbNodes; ++i) {
-            found = true;
-            for (Node node: graph.getNodes()) {
-                for (Arc arc: node.getSuccessors()) {
-
-                    // Small test to check allowed roads...
-                    if (!data.isAllowed(arc)) {
-                        continue;
-                    }
-
-                    // Retrieve weight of the arc.
-                    double w = data.getCost(arc);
-                    double oldDistance = distances[arc.getDestination().getId()];
-                    double newDistance = distances[node.getId()] + w;
-
-                    if (Double.isInfinite(oldDistance) && Double.isFinite(newDistance)) {
-                        notifyNodeReached(arc.getDestination());
-                    }
-
-                    // Check if new distances would be better, if so update...
-                    if (newDistance < oldDistance) {
-                        found = false;
-                        distances[arc.getDestination().getId()] = distances[node.getId()] + w;
-                        predecessorArcs[arc.getDestination().getId()] = arc;
-                    }
+        while(!bh.isEmpty()) {
+        	//get the minimum from the heap
+        	Label label=bh.findMin();
+        	Node current=label.getCurrent();
+        	
+        	bh.remove(label);
+        	
+        	marks[current.getId()].setMark(true);;
+        	
+        	for (Arc arc: label.getCurrent().getSuccessors()) {
+        		
+        		
+        		// Small test to check allowed roads...
+                if (!data.isAllowed(arc)) {
+                    continue;
                 }
-            }
+                //get destination
+        		Node suc=arc.getDestination();
+        		
+        		
+        		if(!marks[suc.getId()].isMark()) {
+        			if(marks[suc.getId()].getCost()>(marks[current.getId()].getCost()+data.getCost(arc))) {
+        				
+        				marks[suc.getId()].setCost(marks[current.getId()].getCost()+data.getCost(arc));
+        				marks[suc.getId()].setFather(current);
+        				
+        				Label labelSuc=marks[suc.getId()];
+        						
+        				if(!bh.isExist(labelSuc)) {
+        					bh.insert(labelSuc);
+        				}
+        			}
+        		}
+        	}
+
+        	
         }
-
-
+        
         // Destination has no predecessor, the solution is infeasible...
-        if (predecessorArcs[data.getDestination().getId()] == null) {
+        if (marks[data.getDestination().getId()].getFather() == null) {
             solution = new ShortestPathSolution(data, Status.INFEASIBLE);
-        }
-        else {
+        }else {
 
             // The destination has been found, notify the observers.
             notifyDestinationReached(data.getDestination());
@@ -96,8 +100,6 @@ public class DijkstraAlgorithm extends ShortestPathAlgorithm {
             // Create the final solution.
             solution = new ShortestPathSolution(data, Status.OPTIMAL, new Path(graph, arcs));
         }
-        
-        
         
         return solution;
     }

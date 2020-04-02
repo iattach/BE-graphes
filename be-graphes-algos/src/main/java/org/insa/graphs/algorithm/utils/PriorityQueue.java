@@ -77,5 +77,8 @@ public interface PriorityQueue<E extends Comparable<E>> {
      * @throws EmptyPriorityQueueException if this queue is empty.
      */
     public E deleteMin() throws EmptyPriorityQueueException;
+    
+    
+    
 
 }

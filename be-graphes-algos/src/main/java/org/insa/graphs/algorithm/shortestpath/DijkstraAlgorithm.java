@@ -1,8 +1,8 @@
 package org.insa.graphs.algorithm.shortestpath;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 import org.insa.graphs.algorithm.AbstractSolution.Status;
 import org.insa.graphs.algorithm.utils.*;
@@ -103,22 +103,20 @@ public class DijkstraAlgorithm extends ShortestPathAlgorithm {
             notifyDestinationReached(data.getDestination());
 
             // Create the path from the array of predecessors...
-            ArrayList<Arc> arcs = new ArrayList<>();
+            ArrayList<Node> nodes=new ArrayList<>();
+             new ArrayList<>();
             Node current= marks[data.getDestination().getId()].getCurrent(); 
-            Node father = marks[data.getDestination().getId()].getFather();
+           
             
-            while (father != null) {
-            	for(Arc arc:father.getSuccessors()) {
-            		if(arc.getDestination()==current) {
-            			arcs.add(arc);
-            		}
-            	}
-            	current = father;
-            	father = marks[current.getId()].getFather();
+            while (current != null) {
+            	nodes.add(current);
+            	current = marks[current.getId()].getFather();
             }
            
             // Reverse the path...
-            Collections.reverse(arcs);
+            Collections.reverse(nodes);
+            
+            List<Arc> arcs =Path.createShortestPathFromNodes(graph, nodes).getArcs();
 
             // Create the final solution.
             solution = new ShortestPathSolution(data, Status.OPTIMAL, new Path(graph, arcs));

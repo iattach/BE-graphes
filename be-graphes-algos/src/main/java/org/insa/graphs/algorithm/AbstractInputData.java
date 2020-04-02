@@ -18,7 +18,7 @@ public abstract class AbstractInputData {
      * @see ArcInspector
      */
     public enum Mode {
-        TIME, LENGTH
+    	LENGTH,TIME
     }
 
     // Graph

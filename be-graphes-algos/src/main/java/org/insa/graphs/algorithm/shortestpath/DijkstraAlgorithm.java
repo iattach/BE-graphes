@@ -44,13 +44,14 @@ public class DijkstraAlgorithm extends ShortestPathAlgorithm {
         // Notify observers about the first event (origin processed).
         notifyOriginProcessed(data.getOrigin());
         
-        
-        while(!bh.isEmpty()) {
+        boolean destMark=false;
+        while(!bh.isEmpty()&&!destMark) {
         	//get the minimum from the heap
         	Label label=bh.findMin();
         	Node current=label.getCurrent();
         	
         	
+        	notifyNodeMarked(current);
         	
         	bh.remove(label);
         	
@@ -70,7 +71,9 @@ public class DijkstraAlgorithm extends ShortestPathAlgorithm {
         		if(!marks[suc.getId()].isMark()) {
         			if(marks[suc.getId()].getCost()>(marks[current.getId()].getCost()+data.getCost(arc))) {
         				
+        				
         				Label labelSucBefore=marks[suc.getId()];
+        				Double costBefore=labelSucBefore.getCost();
         				
         				marks[suc.getId()].setCost(marks[current.getId()].getCost()+data.getCost(arc));
         				marks[suc.getId()].setFather(current);
@@ -78,6 +81,11 @@ public class DijkstraAlgorithm extends ShortestPathAlgorithm {
         				Label labelSucAfter=marks[suc.getId()];
         						
         				if(!bh.isExist(labelSucBefore)) {
+        					if (Double.isInfinite(costBefore) && Double.isFinite(labelSucAfter.getCost())) {
+                                notifyNodeReached(suc);
+                            }
+        					
+        					
         					bh.insert(labelSucAfter);
         				}else {
         					bh.remove(labelSucBefore);
@@ -86,8 +94,19 @@ public class DijkstraAlgorithm extends ShortestPathAlgorithm {
         			}
         		}
         	}
-
         	
+        	label=bh.findMin();
+        	current=label.getCurrent();
+        	if(current.equals(data.getDestination())) {
+        		System.out.println(label.getCost());
+        		destMark=true;
+        	}
+        	
+//        	for(Label l:marks) {
+//        		System.out.print(l.getCurrent().getId()+" : ");
+//        		System.out.printf(" %.2f ",l.getCost());
+//        	}
+//        	System.out.println(" ");
         }
         
         
@@ -117,7 +136,7 @@ public class DijkstraAlgorithm extends ShortestPathAlgorithm {
             Collections.reverse(nodes);
             
             List<Arc> arcs =Path.createShortestPathFromNodes(graph, nodes).getArcs();
-
+            System.out.println(Path.createShortestPathFromNodes(graph, nodes).getLength());
             // Create the final solution.
             solution = new ShortestPathSolution(data, Status.OPTIMAL, new Path(graph, arcs));
         }

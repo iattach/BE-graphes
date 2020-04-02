@@ -27,14 +27,19 @@ public class DijkstraAlgorithm extends ShortestPathAlgorithm {
         final int nbNodes = graph.size();
         
         // Initialize array of marks.
-        Label[] marks=new Label[nbNodes];   
+        Label[] marks=new Label[nbNodes]; 
+        
         for (Node node: graph.getNodes()) {
         	marks[node.getId()]=new Label(node,false,Double.POSITIVE_INFINITY,null);
         }
+        
         marks[data.getOrigin().getId()].setCost(0);
+        
         //Initialize the heap
         BinaryHeap<Label> bh=new BinaryHeap<Label>();
         bh.insert(marks[data.getOrigin().getId()]);
+        
+        
         
         // Notify observers about the first event (origin processed).
         notifyOriginProcessed(data.getOrigin());
@@ -44,6 +49,8 @@ public class DijkstraAlgorithm extends ShortestPathAlgorithm {
         	//get the minimum from the heap
         	Label label=bh.findMin();
         	Node current=label.getCurrent();
+        	
+        	
         	
         	bh.remove(label);
         	
@@ -63,13 +70,18 @@ public class DijkstraAlgorithm extends ShortestPathAlgorithm {
         		if(!marks[suc.getId()].isMark()) {
         			if(marks[suc.getId()].getCost()>(marks[current.getId()].getCost()+data.getCost(arc))) {
         				
+        				Label labelSucBefore=marks[suc.getId()];
+        				
         				marks[suc.getId()].setCost(marks[current.getId()].getCost()+data.getCost(arc));
         				marks[suc.getId()].setFather(current);
         				
-        				Label labelSuc=marks[suc.getId()];
+        				Label labelSucAfter=marks[suc.getId()];
         						
-        				if(!bh.isExist(labelSuc)) {
-        					bh.insert(labelSuc);
+        				if(!bh.isExist(labelSucBefore)) {
+        					bh.insert(labelSucAfter);
+        				}else {
+        					bh.remove(labelSucBefore);
+        					bh.insert(labelSucAfter);
         				}
         			}
         		}
@@ -78,22 +90,33 @@ public class DijkstraAlgorithm extends ShortestPathAlgorithm {
         	
         }
         
+        
         // Destination has no predecessor, the solution is infeasible...
         if (marks[data.getDestination().getId()].getFather() == null) {
+        	
+        	
             solution = new ShortestPathSolution(data, Status.INFEASIBLE);
+            
         }else {
-
+        	
             // The destination has been found, notify the observers.
             notifyDestinationReached(data.getDestination());
 
             // Create the path from the array of predecessors...
             ArrayList<Arc> arcs = new ArrayList<>();
-            Arc arc = predecessorArcs[data.getDestination().getId()];
-            while (arc != null) {
-                arcs.add(arc);
-                arc = predecessorArcs[arc.getOrigin().getId()];
+            Node current= marks[data.getDestination().getId()].getCurrent(); 
+            Node father = marks[data.getDestination().getId()].getFather();
+            
+            while (father != null) {
+            	for(Arc arc:father.getSuccessors()) {
+            		if(arc.getDestination()==current) {
+            			arcs.add(arc);
+            		}
+            	}
+            	current = father;
+            	father = marks[current.getId()].getFather();
             }
-
+           
             // Reverse the path...
             Collections.reverse(arcs);
 

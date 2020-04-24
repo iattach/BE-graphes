@@ -27,10 +27,10 @@ public class DijkstraAlgorithm extends ShortestPathAlgorithm {
         final int nbNodes = graph.size();
         
         // Initialize array of marks.
-        Label[] marks=new Label[nbNodes]; 
+        Label[] marks=this.setLabels(nbNodes);
         
         for (Node node: graph.getNodes()) {
-        	marks[node.getId()]=new Label(node,false,Double.POSITIVE_INFINITY,null);
+        	marks[node.getId()]=setMark(node);
         }
         
         marks[data.getOrigin().getId()].setCost(0);
@@ -73,7 +73,7 @@ public class DijkstraAlgorithm extends ShortestPathAlgorithm {
         				
         				
         				Label labelSucBefore=marks[suc.getId()];
-        				Double costBefore=labelSucBefore.getCost();
+        				double costBefore=labelSucBefore.getCost();
         				
         				marks[suc.getId()].setCost(marks[current.getId()].getCost()+data.getCost(arc));
         				marks[suc.getId()].setFather(current);
@@ -98,15 +98,11 @@ public class DijkstraAlgorithm extends ShortestPathAlgorithm {
         	label=bh.findMin();
         	current=label.getCurrent();
         	if(current.equals(data.getDestination())) {
-        		System.out.println(label.getCost());
+        		//float / double ? = >ici get cost by label => arc return getcost double
+        		//System.out.println(label.getCost());
         		destMark=true;
         	}
         	
-//        	for(Label l:marks) {
-//        		System.out.print(l.getCurrent().getId()+" : ");
-//        		System.out.printf(" %.2f ",l.getCost());
-//        	}
-//        	System.out.println(" ");
         }
         
         
@@ -123,7 +119,7 @@ public class DijkstraAlgorithm extends ShortestPathAlgorithm {
 
             // Create the path from the array of predecessors...
             ArrayList<Node> nodes=new ArrayList<>();
-             new ArrayList<>();
+             
             Node current= marks[data.getDestination().getId()].getCurrent(); 
            
             
@@ -136,12 +132,22 @@ public class DijkstraAlgorithm extends ShortestPathAlgorithm {
             Collections.reverse(nodes);
             
             List<Arc> arcs =Path.createShortestPathFromNodes(graph, nodes).getArcs();
-            System.out.println(Path.createShortestPathFromNodes(graph, nodes).getLength());
+            //float / double ? = >ici getlength by path return float 
+            //System.out.println(Path.createShortestPathFromNodes(graph, nodes).getLength());
             // Create the final solution.
             solution = new ShortestPathSolution(data, Status.OPTIMAL, new Path(graph, arcs));
         }
         
         return solution;
     }
-
+    
+    public Label[] setLabels(int nbNodes) {
+    	return new Label[nbNodes];
+    }
+    public Label setMark(Node node) {
+    	return new Label(node,false,Double.POSITIVE_INFINITY,null);
+    }
+    public boolean getCompareCost(){
+    	return true;
+    }
 }

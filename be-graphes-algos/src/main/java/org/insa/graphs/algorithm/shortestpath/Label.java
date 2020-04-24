@@ -77,4 +77,7 @@ public class Label implements Comparable<Label>{
 			return Double.compare(this.getTotalCost(), other.getTotalCost());
 		}
     }
+	public String toString(){
+		return "Label : "+this.cost;
+	}
 }

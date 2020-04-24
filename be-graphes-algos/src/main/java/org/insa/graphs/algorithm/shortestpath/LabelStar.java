@@ -28,5 +28,9 @@ public class LabelStar extends Label implements Comparable<Label>{
 	public double getTotalCost() {
 		return this.getCost()+this.getCostDest();
 	}
+	@Override
+	public String toString() {
+		return "Label : "+(this.getCost()+this.costDest);
+	}
 	
 }

@@ -102,7 +102,7 @@ public class DijkstraAlgorithm extends ShortestPathAlgorithm {
         		//System.out.println(label.getCost());
         		destMark=true;
         	}
-        	
+        	System.out.println(bh.toString());
         }
         
         

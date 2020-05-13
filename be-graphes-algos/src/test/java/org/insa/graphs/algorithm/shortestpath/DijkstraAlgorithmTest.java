@@ -1,0 +1,226 @@
+package org.insa.graphs.algorithm.shortestpath;
+
+import static org.junit.Assert.*;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import org.insa.graphs.algorithm.AbstractInputData;
+import org.insa.graphs.algorithm.ArcInspector;
+import org.insa.graphs.algorithm.ArcInspectorFactory;
+import org.insa.graphs.model.Arc;
+import org.insa.graphs.model.Graph;
+import org.insa.graphs.model.Node;
+import org.insa.graphs.model.Path;
+import org.insa.graphs.model.RoadInformation;
+import org.insa.graphs.model.RoadInformation.RoadType;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+public class DijkstraAlgorithmTest {
+
+	// Small graph use for tests
+	private static Graph emptyGraph, singleNodeGraph, shortGraph, longGraph, loopGraph, longLoopGraph, invalidGraph;;
+
+	// List of nodes
+	private static Node[] nodes;
+
+	// List of arcs in the graph, a2b is the arc from node A (0) to B (1).
+	@SuppressWarnings("unused")
+	private static Arc a2b, a2c, a2e, b2c, c2d_1, c2d_2, c2d_3, c2a, d2a, d2e, e2d;
+
+	// Some paths solutions...
+	private static ShortestPathSolution emptyPathSolution, singleNodePathSolution, shortPathSolution, longPathSolution,
+			loopPathSolution, longLoopPathSolution, invalidPathSolution;
+	// Data use for tests
+	private static ShortestPathData shortestPathData;
+
+	// Algoritm use for tests
+	private static DijkstraAlgorithm dijkstraAlgoritm;
+
+	// ArcInspector use for tests
+	private static List<ArcInspector> listArcInspector;
+
+	@BeforeClass
+	public static void initAll() throws IOException {
+		
+		
+		listArcInspector = ArcInspectorFactory.getAllFilters();
+		
+	}
+	
+	/*
+	 * Chemin invalide
+	 */
+	@Test
+	public void testInvalidGraph() {
+		// 10 and 20 meters per seconds
+		RoadInformation speed10 = new RoadInformation(RoadType.MOTORWAY, null, true, 36, ""),
+						speed20 = new RoadInformation(RoadType.MOTORWAY, null, true, 72, "");
+		// Create nodes
+		nodes = new Node[5];
+		for (int i = 0; i < nodes.length; ++i) {
+			nodes[i] = new Node(i, null);
+		}
+		// Add arcs...
+		a2b = Node.linkNodes(nodes[0], nodes[1], 10, speed10, null);
+		d2e = Node.linkNodes(nodes[3], nodes[4], 22.8f, speed20, null);
+		e2d = Node.linkNodes(nodes[4], nodes[0], 10, speed10, null);
+		
+		invalidGraph = new Graph("ID", "", Arrays.asList(nodes), null);
+		
+		shortestPathData = new ShortestPathData(invalidGraph, nodes[0], nodes[4], listArcInspector.get(0));
+		dijkstraAlgoritm = new DijkstraAlgorithm(shortestPathData);
+		invalidPathSolution = dijkstraAlgoritm.doRun();
+		
+		assertTrue(!invalidPathSolution.isFeasible());
+
+	}
+	/*
+	 * Chemin de longeur nulle
+	 */
+	@Test
+	public void testCheminNullGraph() {
+		// 10 and 20 meters per seconds
+		RoadInformation speed10 = new RoadInformation(RoadType.MOTORWAY, null, true, 36, ""),
+						speed20 = new RoadInformation(RoadType.MOTORWAY, null, true, 72, "");
+		// Create nodes
+		nodes = new Node[5];
+		for (int i = 0; i < nodes.length; ++i) {
+			nodes[i] = new Node(i, null);
+		}
+		// Add arcs...
+		a2b = Node.linkNodes(nodes[0], nodes[1], 10, speed10, null);
+		d2e = Node.linkNodes(nodes[3], nodes[4], 22.8f, speed20, null);
+		e2d = Node.linkNodes(nodes[4], nodes[0], 10, speed10, null);
+		
+		invalidGraph = new Graph("ID", "", Arrays.asList(nodes), null);
+		
+		shortestPathData = new ShortestPathData(invalidGraph, nodes[0], nodes[0], listArcInspector.get(0));
+		dijkstraAlgoritm = new DijkstraAlgorithm(shortestPathData);
+		invalidPathSolution = dijkstraAlgoritm.doRun();
+		
+		assertTrue(!invalidPathSolution.isFeasible());
+
+	}
+	/*
+	 * @Test public void testConstructor() { assertEquals(graph,
+	 * emptyPath.getGraph()); assertEquals(graph, singleNodePath.getGraph());
+	 * assertEquals(graph, shortPath.getGraph()); assertEquals(graph,
+	 * longPath.getGraph()); assertEquals(graph, loopPath.getGraph());
+	 * assertEquals(graph, longLoopPath.getGraph()); assertEquals(graph,
+	 * invalidPath.getGraph()); }
+	 * 
+	 * @Test(expected = UnsupportedOperationException.class) public void
+	 * testImmutability() { emptyPath.getArcs().add(a2b); }
+	 * 
+	 * @Test public void testIsEmpty() { assertTrue(emptyPath.isEmpty());
+	 * assertFalse(singleNodePath.isEmpty()); assertFalse(shortPath.isEmpty());
+	 * assertFalse(longPath.isEmpty()); assertFalse(loopPath.isEmpty());
+	 * assertFalse(longLoopPath.isEmpty()); assertFalse(invalidPath.isEmpty()); }
+	 * 
+	 * @Test public void testSize() { assertEquals(0, emptyPath.size());
+	 * assertEquals(1, singleNodePath.size()); assertEquals(4, shortPath.size());
+	 * assertEquals(5, longPath.size()); assertEquals(5, loopPath.size());
+	 * assertEquals(10, longLoopPath.size()); }
+	 * 
+	 * @Test public void testIsValid() { assertTrue(emptyPath.isValid());
+	 * assertTrue(singleNodePath.isValid()); assertTrue(shortPath.isValid());
+	 * assertTrue(longPath.isValid()); assertTrue(loopPath.isValid());
+	 * assertTrue(longLoopPath.isValid());
+	 * 
+	 * assertFalse(invalidPath.isValid()); }
+	 * 
+	 * @Test public void testGetLength() { assertEquals(0, emptyPath.getLength(),
+	 * 1e-6); assertEquals(0, singleNodePath.getLength(), 1e-6); assertEquals(40,
+	 * shortPath.getLength(), 1e-6); assertEquals(62.8, longPath.getLength(), 1e-6);
+	 * assertEquals(55, loopPath.getLength(), 1e-6); assertEquals(120,
+	 * longLoopPath.getLength(), 1e-6); }
+	 * 
+	 * @Test public void testGetTravelTime() { // Note: 18 km/h = 5m/s
+	 * assertEquals(0, emptyPath.getTravelTime(18), 1e-6); assertEquals(0,
+	 * singleNodePath.getTravelTime(18), 1e-6); assertEquals(8,
+	 * shortPath.getTravelTime(18), 1e-6); assertEquals(12.56,
+	 * longPath.getTravelTime(18), 1e-6); assertEquals(11,
+	 * loopPath.getTravelTime(18), 1e-6); assertEquals(24,
+	 * longLoopPath.getTravelTime(18), 1e-6);
+	 * 
+	 * // Note: 28.8 km/h = 8m/s assertEquals(0, emptyPath.getTravelTime(28.8),
+	 * 1e-6); assertEquals(0, singleNodePath.getTravelTime(28.8), 1e-6);
+	 * assertEquals(5, shortPath.getTravelTime(28.8), 1e-6); assertEquals(7.85,
+	 * longPath.getTravelTime(28.8), 1e-6); assertEquals(6.875,
+	 * loopPath.getTravelTime(28.8), 1e-6); assertEquals(15,
+	 * longLoopPath.getTravelTime(28.8), 1e-6); }
+	 * 
+	 * @Test public void testGetMinimumTravelTime() { assertEquals(0,
+	 * emptyPath.getMinimumTravelTime(), 1e-4); assertEquals(0,
+	 * singleNodePath.getLength(), 1e-4); assertEquals(4,
+	 * shortPath.getMinimumTravelTime(), 1e-4); assertEquals(5.14,
+	 * longPath.getMinimumTravelTime(), 1e-4); assertEquals(5.5,
+	 * loopPath.getMinimumTravelTime(), 1e-4); assertEquals(11.25,
+	 * longLoopPath.getMinimumTravelTime(), 1e-4); }
+	 * 
+	 * @Test public void testCreateFastestPathFromNodes() { Path path; Arc[]
+	 * expected;
+	 * 
+	 * // Simple construction path = Path.createFastestPathFromNodes(graph,
+	 * Arrays.asList(new Node[] { nodes[0], nodes[1], nodes[2] })); expected = new
+	 * Arc[] { a2b, b2c }; assertEquals(expected.length, path.getArcs().size()); for
+	 * (int i = 0; i < expected.length; ++i) { assertEquals(expected[i],
+	 * path.getArcs().get(i)); }
+	 * 
+	 * // Not so simple construction path = Path.createFastestPathFromNodes(graph,
+	 * Arrays.asList(new Node[] { nodes[0], nodes[1], nodes[2], nodes[3] }));
+	 * expected = new Arc[] { a2b, b2c, c2d_3 }; assertEquals(expected.length,
+	 * path.getArcs().size()); for (int i = 0; i < expected.length; ++i) {
+	 * assertEquals(expected[i], path.getArcs().get(i)); }
+	 * 
+	 * // Trap construction! path = Path.createFastestPathFromNodes(graph,
+	 * Arrays.asList(new Node[] { nodes[1] })); assertEquals(nodes[1],
+	 * path.getOrigin()); assertEquals(0, path.getArcs().size());
+	 * 
+	 * // Trap construction - The return! path =
+	 * Path.createFastestPathFromNodes(graph, Arrays.asList(new Node[0]));
+	 * assertEquals(null, path.getOrigin()); assertEquals(0, path.getArcs().size());
+	 * assertTrue(path.isEmpty()); }
+	 */
+	/*
+	 * @Test public void testCreateShortestPathFromNodes() { Path path; Arc[]
+	 * expected;
+	 * 
+	 * // Simple construction path = Path.createShortestPathFromNodes(graph,
+	 * Arrays.asList(new Node[] { nodes[0], nodes[1], nodes[2] })); expected = new
+	 * Arc[] { a2b, b2c }; assertEquals(expected.length, path.getArcs().size()); for
+	 * (int i = 0; i < expected.length; ++i) { assertEquals(expected[i],
+	 * path.getArcs().get(i)); }
+	 * 
+	 * // Not so simple construction path = Path.createShortestPathFromNodes(graph,
+	 * Arrays.asList(new Node[] { nodes[0], nodes[1], nodes[2], nodes[3] }));
+	 * expected = new Arc[] { a2b, b2c, c2d_2 }; System.out.println(
+	 * path.getArcs()); assertEquals(expected.length, path.getArcs().size()); for
+	 * (int i = 0; i < expected.length; ++i) { assertEquals(expected[i],
+	 * path.getArcs().get(i)); }
+	 * 
+	 * // Trap construction! path = Path.createShortestPathFromNodes(graph,
+	 * Arrays.asList(new Node[] { nodes[1] })); assertEquals(nodes[1],
+	 * path.getOrigin()); assertEquals(0, path.getArcs().size());
+	 * 
+	 * // Trap construction - The return! path =
+	 * Path.createShortestPathFromNodes(graph, Arrays.asList(new Node[0]));
+	 * assertEquals(null, path.getOrigin()); assertEquals(0, path.getArcs().size());
+	 * assertTrue(path.isEmpty()); }
+	 * 
+	 * @Test(expected = IllegalArgumentException.class) public void
+	 * testCreateFastestPathFromNodesException() {
+	 * Path.createFastestPathFromNodes(graph, Arrays.asList(new Node[] { nodes[1],
+	 * nodes[0] })); }
+	 * 
+	 * @Test(expected = IllegalArgumentException.class) public void
+	 * testCreateShortestPathFromNodesException() {
+	 * Path.createShortestPathFromNodes(graph, Arrays.asList(new Node[] { nodes[1],
+	 * nodes[0] })); }
+	 */
+
+}

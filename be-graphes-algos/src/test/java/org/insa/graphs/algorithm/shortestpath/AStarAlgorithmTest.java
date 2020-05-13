@@ -19,7 +19,7 @@ import org.insa.graphs.model.RoadInformation.RoadType;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class DijkstraAlgorithmTest {
+public class AStarAlgorithmTest {
 
 	// Small graph use for tests
 	private static Graph emptyGraph, singleNodeGraph, shortGraph, longGraph, loopGraph, longLoopGraph, invalidGraph;;
@@ -38,7 +38,7 @@ public class DijkstraAlgorithmTest {
 	private static ShortestPathData shortestPathData;
 
 	// Algoritm use for tests
-	private static DijkstraAlgorithm dijkstraAlgorithm;
+	private static AStarAlgorithm aStarAlgorithm;
 
 	// ArcInspector use for tests
 	private static List<ArcInspector> listArcInspector;
@@ -72,8 +72,8 @@ public class DijkstraAlgorithmTest {
 		invalidGraph = new Graph("ID", "", Arrays.asList(nodes), null);
 		
 		shortestPathData = new ShortestPathData(invalidGraph, nodes[0], nodes[4], listArcInspector.get(0));
-		dijkstraAlgorithm = new DijkstraAlgorithm(shortestPathData);
-		invalidPathSolution = dijkstraAlgorithm.doRun();
+		aStarAlgorithm = new AStarAlgorithm(shortestPathData);
+		invalidPathSolution = aStarAlgorithm.doRun();
 		
 		assertTrue(!invalidPathSolution.isFeasible());
 
@@ -99,8 +99,8 @@ public class DijkstraAlgorithmTest {
 		invalidGraph = new Graph("ID", "", Arrays.asList(nodes), null);
 		
 		shortestPathData = new ShortestPathData(invalidGraph, nodes[0], nodes[0], listArcInspector.get(0));
-		dijkstraAlgorithm = new DijkstraAlgorithm(shortestPathData);
-		invalidPathSolution = dijkstraAlgorithm.doRun();
+		aStarAlgorithm = new AStarAlgorithm(shortestPathData);
+		invalidPathSolution = aStarAlgorithm.doRun();
 		
 		assertTrue(!invalidPathSolution.isFeasible());
 

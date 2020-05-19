@@ -33,7 +33,7 @@ public class AStarAlgorithm extends DijkstraAlgorithm {
 		
 		
 		Mode m=data.getMode();
-		if(m==Mode.LENGTH) {
+		if(m.compareTo(Mode.LENGTH)==0) {
 			return distance;
 		}else {
 			if(data.getMaximumSpeed()==GraphStatistics.NO_MAXIMUM_SPEED) {

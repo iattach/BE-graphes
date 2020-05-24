@@ -20,7 +20,7 @@ public class LabelStar extends Label implements Comparable<Label>{
 		// TODO Auto-generated constructor stub
 	}
 	public double getCostDest() {
-		return costDest;
+		return this.costDest;
 	}
 	public void setCostDest(double costDest) {
 		this.costDest = costDest;
@@ -30,7 +30,7 @@ public class LabelStar extends Label implements Comparable<Label>{
 	}
 	@Override
 	public String toString() {
-		return "Label : "+(this.getCost()+this.costDest);
+		return "Label dest : "+(this.costDest);
 	}
 	
 }

@@ -98,7 +98,8 @@ public class AlgorithmCompareTest {
 		
 		System.out.println(durDijkstra);
 		
-		assertTrue(durDijkstra==durAStar);
+		
+		assertTrue(Math.abs(durDijkstra - durAStar) < 0.001d);
 		assertTrue(durDijkstra==durBellmanFord);
 
 	}

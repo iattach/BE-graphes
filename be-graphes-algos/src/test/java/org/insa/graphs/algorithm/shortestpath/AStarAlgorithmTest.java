@@ -1,79 +1,89 @@
 package org.insa.graphs.algorithm.shortestpath;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
+import java.io.BufferedInputStream;
+import java.io.DataInputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-
-import org.insa.graphs.algorithm.AbstractInputData;
 import org.insa.graphs.algorithm.ArcInspector;
 import org.insa.graphs.algorithm.ArcInspectorFactory;
-import org.insa.graphs.model.Arc;
 import org.insa.graphs.model.Graph;
 import org.insa.graphs.model.Node;
-import org.insa.graphs.model.Path;
-import org.insa.graphs.model.RoadInformation;
-import org.insa.graphs.model.RoadInformation.RoadType;
+import org.insa.graphs.model.io.BinaryGraphReader;
+import org.insa.graphs.model.io.GraphReader;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class AStarAlgorithmTest {
 
 	// Small graph use for tests
-	private static Graph emptyGraph, singleNodeGraph, shortGraph, longGraph, loopGraph, longLoopGraph, invalidGraph;;
+	private static Graph mapGraph;
 
-	// List of nodes
-	private static Node[] nodes;
 
-	// List of arcs in the graph, a2b is the arc from node A (0) to B (1).
-	@SuppressWarnings("unused")
-	private static Arc a2b, a2c, a2e, b2c, c2d_1, c2d_2, c2d_3, c2a, d2a, d2e, e2d;
+	private static List<Node> nodesCarreGraph;
 
 	// Some paths solutions...
-	private static ShortestPathSolution emptyPathSolution, singleNodePathSolution, shortPathSolution, longPathSolution,
-			loopPathSolution, longLoopPathSolution, invalidPathSolution;
+	private static ShortestPathSolution singleNodePathSolution, invalidPathSolution;
+	private ShortestPathSolution aStarSolution,bellmanFordSolution;
+	
 	// Data use for tests
-	private static ShortestPathData shortestPathData;
+	private ShortestPathData shortestPathData;
 
 	// Algoritm use for tests
-	private static AStarAlgorithm aStarAlgorithm;
-
+	private AStarAlgorithm aStarAlgorithm;
+	private BellmanFordAlgorithm bellmanFordAlgorithm;
 	// ArcInspector use for tests
 	private static List<ArcInspector> listArcInspector;
+	
+	// Graph reader use for tests
+	private static GraphReader reader;
 
 	@BeforeClass
 	public static void initAll() throws IOException {
 		
-		
 		listArcInspector = ArcInspectorFactory.getAllFilters();
 		
 	}
-	
 	/*
-	 * Chemin invalide
+	 * Chemin inexistant
 	 */
 	@Test
-	public void testInvalidGraph() {
-		// 10 and 20 meters per seconds
-		RoadInformation speed10 = new RoadInformation(RoadType.MOTORWAY, null, true, 36, ""),
-						speed20 = new RoadInformation(RoadType.MOTORWAY, null, true, 72, "");
-		// Create nodes
-		nodes = new Node[5];
-		for (int i = 0; i < nodes.length; ++i) {
-			nodes[i] = new Node(i, null);
-		}
-		// Add arcs...
-		a2b = Node.linkNodes(nodes[0], nodes[1], 10, speed10, null);
-		d2e = Node.linkNodes(nodes[3], nodes[4], 22.8f, speed20, null);
-		e2d = Node.linkNodes(nodes[4], nodes[0], 10, speed10, null);
+	public void testCheminInvalid_1() throws IOException {
+		//System.out.println(System.getProperty("user.dir"));
+		String mapName = "../hawaii.mapgr";
 		
-		invalidGraph = new Graph("ID", "", Arrays.asList(nodes), null);
+		reader = new BinaryGraphReader(
+                new DataInputStream(new BufferedInputStream(new FileInputStream(mapName))));
+		mapGraph=reader.read();
+		nodesCarreGraph=mapGraph.getNodes();
 		
-		shortestPathData = new ShortestPathData(invalidGraph, nodes[0], nodes[4], listArcInspector.get(0));
+		shortestPathData = new ShortestPathData(mapGraph, nodesCarreGraph.get(41733), nodesCarreGraph.get(65424), listArcInspector.get(0));
+		
 		aStarAlgorithm = new AStarAlgorithm(shortestPathData);
-		invalidPathSolution = aStarAlgorithm.doRun();
+		invalidPathSolution=aStarAlgorithm.doRun();
+		
+		assertTrue(!invalidPathSolution.isFeasible());
+
+	}
+	/*
+	 * Chemin inexistant
+	 */
+	@Test
+	public void testCheminInvalid_2() throws IOException {
+		//System.out.println(System.getProperty("user.dir"));
+		String mapName = "../new-zealand.mapgr";
+		
+		reader = new BinaryGraphReader(
+                new DataInputStream(new BufferedInputStream(new FileInputStream(mapName))));
+		mapGraph=reader.read();
+		nodesCarreGraph=mapGraph.getNodes();
+		
+		shortestPathData = new ShortestPathData(mapGraph, nodesCarreGraph.get(107873), nodesCarreGraph.get(49212), listArcInspector.get(3));
+		
+		aStarAlgorithm = new AStarAlgorithm(shortestPathData);
+		invalidPathSolution=aStarAlgorithm.doRun();
 		
 		assertTrue(!invalidPathSolution.isFeasible());
 
@@ -82,27 +92,305 @@ public class AStarAlgorithmTest {
 	 * Chemin de longeur nulle
 	 */
 	@Test
-	public void testCheminNullGraph() {
-		// 10 and 20 meters per seconds
-		RoadInformation speed10 = new RoadInformation(RoadType.MOTORWAY, null, true, 36, ""),
-						speed20 = new RoadInformation(RoadType.MOTORWAY, null, true, 72, "");
-		// Create nodes
-		nodes = new Node[5];
-		for (int i = 0; i < nodes.length; ++i) {
-			nodes[i] = new Node(i, null);
-		}
-		// Add arcs...
-		a2b = Node.linkNodes(nodes[0], nodes[1], 10, speed10, null);
-		d2e = Node.linkNodes(nodes[3], nodes[4], 22.8f, speed20, null);
-		e2d = Node.linkNodes(nodes[4], nodes[0], 10, speed10, null);
+	public void testSingleNodeChemin_1()throws IOException {
+		String mapName = "../carre.mapgr";
 		
-		invalidGraph = new Graph("ID", "", Arrays.asList(nodes), null);
+		reader = new BinaryGraphReader(
+                new DataInputStream(new BufferedInputStream(new FileInputStream(mapName))));
+		mapGraph=reader.read();
+		nodesCarreGraph=mapGraph.getNodes();
 		
-		shortestPathData = new ShortestPathData(invalidGraph, nodes[0], nodes[0], listArcInspector.get(0));
+		shortestPathData = new ShortestPathData(mapGraph, nodesCarreGraph.get(0), nodesCarreGraph.get(0), listArcInspector.get(0));
+		
 		aStarAlgorithm = new AStarAlgorithm(shortestPathData);
-		invalidPathSolution = aStarAlgorithm.doRun();
+		singleNodePathSolution = aStarAlgorithm.doRun();
 		
-		assertTrue(!invalidPathSolution.isFeasible());
+		double durAStar=singleNodePathSolution.getPath().getMinimumTravelTime();
+		
+		assertTrue(durAStar==0);
+
+	}
+	
+	/*
+	 * Chemin de longeur nulle
+	 */
+	@Test
+	public void testSingleNodeChemin_2()throws IOException {
+		String mapName = "../hawaii.mapgr";
+		
+		reader = new BinaryGraphReader(
+                new DataInputStream(new BufferedInputStream(new FileInputStream(mapName))));
+		mapGraph=reader.read();
+		nodesCarreGraph=mapGraph.getNodes();
+		
+		shortestPathData = new ShortestPathData(mapGraph, nodesCarreGraph.get(37859), nodesCarreGraph.get(37859), listArcInspector.get(0));
+		
+		aStarAlgorithm = new AStarAlgorithm(shortestPathData);
+		singleNodePathSolution = aStarAlgorithm.doRun();
+
+		double durAStar=singleNodePathSolution.getPath().getMinimumTravelTime();
+		
+		assertTrue(durAStar==0);
+
+	}
+	/*
+	 * Shortest path, all roads allowed
+	 */
+	@Test
+	public void testShortestAllAllowed_1()throws IOException {
+		String mapName = "../toulouse.mapgr";
+		
+		reader = new BinaryGraphReader(
+                new DataInputStream(new BufferedInputStream(new FileInputStream(mapName))));
+		mapGraph=reader.read();
+		nodesCarreGraph=mapGraph.getNodes();
+		
+		shortestPathData = new ShortestPathData(mapGraph, nodesCarreGraph.get(12625), nodesCarreGraph.get(9610), listArcInspector.get(0));
+		
+		aStarAlgorithm = new AStarAlgorithm(shortestPathData);
+		aStarSolution = aStarAlgorithm.doRun();
+
+		bellmanFordAlgorithm = new BellmanFordAlgorithm(shortestPathData);
+		bellmanFordSolution=bellmanFordAlgorithm.doRun();
+		
+		double durAStar=aStarSolution.getPath().getLength();
+		double durBellmanFord=bellmanFordSolution.getPath().getLength();
+		
+		assertTrue(Math.abs(durAStar - durBellmanFord) < 0.001d);
+
+	}
+	/*
+	 * Shortest path, all roads allowed
+	 */
+	@Test
+	public void testShortestAllAllowed_2()throws IOException {
+		String mapName = "../washington.mapgr";
+		
+		reader = new BinaryGraphReader(
+               new DataInputStream(new BufferedInputStream(new FileInputStream(mapName))));
+		mapGraph=reader.read();
+		nodesCarreGraph=mapGraph.getNodes();
+		
+		shortestPathData = new ShortestPathData(mapGraph, nodesCarreGraph.get(147639), nodesCarreGraph.get(132165), listArcInspector.get(0));
+		
+		aStarAlgorithm = new AStarAlgorithm(shortestPathData);
+		aStarSolution = aStarAlgorithm.doRun();
+
+//		bellmanFordAlgorithm = new BellmanFordAlgorithm(shortestPathData);
+//		bellmanFordSolution=bellmanFordAlgorithm.doRun();
+//		
+//		double durAStar=aStarSolution.getPath().getLength();
+//		double durBellmanFord=bellmanFordSolution.getPath().getLength();
+//		
+//		assertTrue(Math.abs(durAStar - durBellmanFord) < 0.001d);
+
+	}
+	/*
+	 * Shortest path, only roads open for cars
+	 */
+	@Test
+	public void testShortestOnlyCar_1()throws IOException {
+		String mapName = "../toulouse.mapgr";
+		
+		reader = new BinaryGraphReader(
+                new DataInputStream(new BufferedInputStream(new FileInputStream(mapName))));
+		mapGraph=reader.read();
+		nodesCarreGraph=mapGraph.getNodes();
+		
+		shortestPathData = new ShortestPathData(mapGraph, nodesCarreGraph.get(12625), nodesCarreGraph.get(9610), listArcInspector.get(1));
+		
+		aStarAlgorithm = new AStarAlgorithm(shortestPathData);
+		aStarSolution = aStarAlgorithm.doRun();
+
+		bellmanFordAlgorithm = new BellmanFordAlgorithm(shortestPathData);
+		bellmanFordSolution=bellmanFordAlgorithm.doRun();
+		
+		double durAStar=aStarSolution.getPath().getLength();
+		double durBellmanFord=bellmanFordSolution.getPath().getLength();
+		
+		assertTrue(Math.abs(durAStar - durBellmanFord) < 0.001d);
+
+	}
+	/*
+	 * Shortest path, only roads open for cars
+	 */
+	@Test
+	public void testShortestOnlyCar_2()throws IOException {
+		String mapName = "../midi-pyrenees.mapgr";
+		
+		reader = new BinaryGraphReader(
+                new DataInputStream(new BufferedInputStream(new FileInputStream(mapName))));
+		mapGraph=reader.read();
+		nodesCarreGraph=mapGraph.getNodes();
+		
+		shortestPathData = new ShortestPathData(mapGraph, nodesCarreGraph.get(341560), nodesCarreGraph.get(548753), listArcInspector.get(1));
+		
+		aStarAlgorithm = new AStarAlgorithm(shortestPathData);
+		aStarSolution = aStarAlgorithm.doRun();
+
+//		bellmanFordAlgorithm = new BellmanFordAlgorithm(shortestPathData);
+//		bellmanFordSolution=bellmanFordAlgorithm.doRun();
+//		
+//		double durAStar=aStarSolution.getPath().getLength();
+//		double durBellmanFord=bellmanFordSolution.getPath().getLength();
+//		
+//		assertTrue(Math.abs(durAStar - durBellmanFord) < 0.001d);
+
+	}
+	/*
+	 * Fastest path, all roads allowed
+	 */
+	@Test
+	public void testFastestAllAllowed_1() throws IOException {
+		String mapName = "../toulouse.mapgr";
+		
+		reader = new BinaryGraphReader(
+                new DataInputStream(new BufferedInputStream(new FileInputStream(mapName))));
+		mapGraph=reader.read();
+		nodesCarreGraph=mapGraph.getNodes();
+		
+		shortestPathData = new ShortestPathData(mapGraph, nodesCarreGraph.get(12625), nodesCarreGraph.get(9610), listArcInspector.get(2));
+		
+		aStarAlgorithm = new AStarAlgorithm(shortestPathData);
+		aStarSolution = aStarAlgorithm.doRun();
+
+		bellmanFordAlgorithm = new BellmanFordAlgorithm(shortestPathData);
+		bellmanFordSolution=bellmanFordAlgorithm.doRun();
+		
+		double durAStar=aStarSolution.getPath().getLength();
+		double durBellmanFord=bellmanFordSolution.getPath().getLength();
+		
+		assertTrue(Math.abs(durAStar - durBellmanFord) < 0.001d);
+
+	}
+	/*
+	 * Fastest path, all roads allowed
+	 */
+	@Test
+	public void testFastestAllAllowed_2() throws IOException {
+		String mapName = "../insa.mapgr";
+		
+		reader = new BinaryGraphReader(
+                new DataInputStream(new BufferedInputStream(new FileInputStream(mapName))));
+		mapGraph=reader.read();
+		nodesCarreGraph=mapGraph.getNodes();
+		
+		shortestPathData = new ShortestPathData(mapGraph, nodesCarreGraph.get(5), nodesCarreGraph.get(636), listArcInspector.get(2));
+		
+		aStarAlgorithm = new AStarAlgorithm(shortestPathData);
+		aStarSolution = aStarAlgorithm.doRun();
+
+		bellmanFordAlgorithm = new BellmanFordAlgorithm(shortestPathData);
+		bellmanFordSolution=bellmanFordAlgorithm.doRun();
+		
+		double durAStar=aStarSolution.getPath().getLength();
+		double durBellmanFord=bellmanFordSolution.getPath().getLength();
+		
+		assertTrue(Math.abs(durAStar - durBellmanFord) < 0.001d);
+
+	}
+	/*
+	 * Fastest path, only roads open for cars
+	 */
+	@Test
+	public void testFastestOnlyCar_1() throws IOException {
+		String mapName = "../toulouse.mapgr";
+		
+		reader = new BinaryGraphReader(
+                new DataInputStream(new BufferedInputStream(new FileInputStream(mapName))));
+		mapGraph=reader.read();
+		nodesCarreGraph=mapGraph.getNodes();
+		
+		shortestPathData = new ShortestPathData(mapGraph, nodesCarreGraph.get(12625), nodesCarreGraph.get(9610), listArcInspector.get(3));
+		
+		aStarAlgorithm = new AStarAlgorithm(shortestPathData);
+		aStarSolution = aStarAlgorithm.doRun();
+
+		bellmanFordAlgorithm = new BellmanFordAlgorithm(shortestPathData);
+		bellmanFordSolution=bellmanFordAlgorithm.doRun();
+		
+		double durAStar=aStarSolution.getPath().getLength();
+		double durBellmanFord=bellmanFordSolution.getPath().getLength();
+		
+		assertTrue(Math.abs(durAStar - durBellmanFord) < 0.001d);
+
+	}
+	/*
+	 * Fastest path, only roads open for cars
+	 */
+	@Test
+	public void testFastestOnlyCar_2() throws IOException {
+		String mapName = "../paris.mapgr";
+		
+		reader = new BinaryGraphReader(
+                new DataInputStream(new BufferedInputStream(new FileInputStream(mapName))));
+		mapGraph=reader.read();
+		nodesCarreGraph=mapGraph.getNodes();
+		
+		shortestPathData = new ShortestPathData(mapGraph, nodesCarreGraph.get(7317), nodesCarreGraph.get(5603), listArcInspector.get(3));
+		
+		aStarAlgorithm = new AStarAlgorithm(shortestPathData);
+		aStarSolution = aStarAlgorithm.doRun();
+
+		bellmanFordAlgorithm = new BellmanFordAlgorithm(shortestPathData);
+		bellmanFordSolution=bellmanFordAlgorithm.doRun();
+		
+		double durAStar=aStarSolution.getPath().getLength();
+		double durBellmanFord=bellmanFordSolution.getPath().getLength();
+		
+		assertTrue(Math.abs(durAStar - durBellmanFord) < 0.001d);
+
+	}
+	/*
+	 * Fastest path for pedestrian
+	 */
+	@Test
+	public void testFastestPedestrian_1() throws IOException {
+		String mapName = "../toulouse.mapgr";
+		
+		reader = new BinaryGraphReader(
+                new DataInputStream(new BufferedInputStream(new FileInputStream(mapName))));
+		mapGraph=reader.read();
+		nodesCarreGraph=mapGraph.getNodes();
+		
+		shortestPathData = new ShortestPathData(mapGraph, nodesCarreGraph.get(12625), nodesCarreGraph.get(9610), listArcInspector.get(4));
+		
+		aStarAlgorithm = new AStarAlgorithm(shortestPathData);
+		aStarSolution = aStarAlgorithm.doRun();
+
+		bellmanFordAlgorithm = new BellmanFordAlgorithm(shortestPathData);
+		bellmanFordSolution=bellmanFordAlgorithm.doRun();
+		
+		double durAStar=aStarSolution.getPath().getLength();
+		double durBellmanFord=bellmanFordSolution.getPath().getLength();
+		
+		assertTrue(Math.abs(durAStar - durBellmanFord) < 0.001d);
+
+	}
+	/*
+	 * Fastest path for pedestrian
+	 */
+	@Test
+	public void testFastestPedestrian_2() throws IOException {
+		String mapName = "../bordeaux.mapgr";
+		
+		reader = new BinaryGraphReader(
+                new DataInputStream(new BufferedInputStream(new FileInputStream(mapName))));
+		mapGraph=reader.read();
+		nodesCarreGraph=mapGraph.getNodes();
+		
+		shortestPathData = new ShortestPathData(mapGraph, nodesCarreGraph.get(5737), nodesCarreGraph.get(7974), listArcInspector.get(4));
+		
+		aStarAlgorithm = new AStarAlgorithm(shortestPathData);
+		aStarSolution = aStarAlgorithm.doRun();
+
+		bellmanFordAlgorithm = new BellmanFordAlgorithm(shortestPathData);
+		bellmanFordSolution=bellmanFordAlgorithm.doRun();
+		
+		double durAStar=aStarSolution.getPath().getLength();
+		double durBellmanFord=bellmanFordSolution.getPath().getLength();
+
+		assertTrue(Math.abs(durAStar - durBellmanFord) < 0.001d);
 
 	}
 	

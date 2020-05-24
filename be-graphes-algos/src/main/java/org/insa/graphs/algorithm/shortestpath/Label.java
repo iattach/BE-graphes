@@ -54,7 +54,7 @@ public class Label implements Comparable<Label>{
 
 
 	public double getCost() {
-		return cost;
+		return this.cost;
 	}
 
 	public boolean isMark() {
@@ -71,7 +71,7 @@ public class Label implements Comparable<Label>{
 	}
 	@Override
 	public int compareTo(Label other) {
-		if(this.getTotalCost()==other.getTotalCost()) {
+		if(Math.abs(this.getTotalCost()-other.getTotalCost())<0.001d){
 			return this.current.compareTo(other.getCurrent());
 		}else {
 			return Double.compare(this.getTotalCost(), other.getTotalCost());

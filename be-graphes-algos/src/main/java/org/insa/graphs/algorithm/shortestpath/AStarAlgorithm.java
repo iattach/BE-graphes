@@ -31,8 +31,8 @@ public class AStarAlgorithm extends DijkstraAlgorithm {
 		
 		double distance=Point.distance(pointNode, pointNodeDest);
 		
-		
 		Mode m=data.getMode();
+
 		if(m.compareTo(Mode.LENGTH)==0) {
 			return distance;
 		}else {
